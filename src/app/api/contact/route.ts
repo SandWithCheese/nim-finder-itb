@@ -14,6 +14,19 @@ export async function POST(req: Request){
         secure: true,
     })
 
+    await new Promise((resolve, reject) => {
+        // verify connection configuration
+        transporter.verify(function (err: any, succ: any) {
+            if (err) {
+                console.log(err)
+                reject(err)
+            } else {
+                console.log("Server is ready to take our messages")
+                resolve(succ)
+            }
+        })
+    })
+
     const mailData = {
         from: "nimfinderitb@gmail.com",
         to: "naufalahmad022@gmail.com",
@@ -22,13 +35,18 @@ export async function POST(req: Request){
         html: `<p>${data.message}</p>`
     }
 
-    transporter.sendMail(mailData, (err: any, info: any) => {
-        if (err){
-            console.log(err)
-        }
-        else{
-            console.log(info)
-        }  
+    await new Promise((resolve, reject) => {
+        // send mail
+        transporter.sendMail(mailData, (err: any, info: any) => {
+            if (err){
+                console.log(err)
+                reject(err)
+            }
+            else{
+                console.log(info)
+                resolve(info)
+            }  
+        })
     })
 
     return new Response("Success", {status: 200})
