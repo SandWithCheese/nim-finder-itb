@@ -8,7 +8,7 @@ export async function POST(req: Request){
         port: 465,
         host: "smtp.gmail.com",
         auth: {
-            user: process.env.from,
+            user: "nimfinderitb@gmail.com",
             pass: process.env.password,
         },
         secure: true,
@@ -28,8 +28,8 @@ export async function POST(req: Request){
     })
 
     const mailData = {
-        from: process.env.from,
-        to: process.env.to,
+        from: "nimfinderitb@gmail.com",
+        to: "naufalahmad022@gmail.com",
         subject: `Message from ${data.name}`,
         text: data.message,
         html: `<p>${data.message}</p>`
