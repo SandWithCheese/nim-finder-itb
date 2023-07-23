@@ -1,7 +1,8 @@
 "use client"
 
 import Navbar from "./components/navbar"
-import { FormEvent, useState } from "react"
+import { useEffect, useState } from "react"
+import useDebounce from "./hooks/useDebounce"
 
 type Data = {
   NAMA: string,
@@ -11,36 +12,30 @@ type Data = {
 
 export default function Home() {
   const [search, setSearch] = useState("")
-  const [result, setResult] = useState<any[]>([])
-  
-  const getData = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const url = "https://sandwithcheese.github.io/nim-data/data.json"
-    fetch(url)
-    .then((res) => {
-      return res.json()
+  const debounceSearch = useDebounce(search, 500)
+  const [result, setResult] = useState<Data[]>([])
+  const [data, setData] = useState<Data[]>([])
+
+  useEffect(() => {
+    async function getData(){
+      const fetchData = await fetch("https://sandwithcheese.github.io/nim-data/data.json")
+      setData(await fetchData.json())
+    }
+
+    getData()
+  }, [])
+
+
+  useEffect(() => {
+    const filteredData = data.filter((mahasiswa: Data) => {
+      return mahasiswa.NAMA.toLowerCase().includes(debounceSearch.toLowerCase()) || mahasiswa.NIM.includes(debounceSearch) || mahasiswa.FAKULTAS.toLowerCase().includes(debounceSearch.toLowerCase())
     })
-    .then((data) => {
-      const filtered = []
-      if (search.length > 0) {
-        for (let i = 0; i < data.length; i++) {
-          if (data[i].NAMA.toLowerCase().includes(search.toLowerCase())){
-            filtered.push(data[i])
-          }
-  
-          if (data[i].NIM.includes(search)){
-            filtered.push(data[i])
-          }
-  
-          if (data[i].FAKULTAS.toLowerCase().includes(search.toLowerCase())){
-            filtered.push(data[i])
-          }
-        }
-      }
-      
-      setResult(filtered)
-    })
-  }
+    if (debounceSearch === ""){
+      setResult([])
+    } else{
+      setResult(filteredData)
+    }
+  }, [data, debounceSearch])
 
   return (
     <div className="flex flex-col mx-4 sm:mx-12 md:mx-24 lg:mx-48">
@@ -48,12 +43,11 @@ export default function Home() {
       <Navbar/>
 
       <p className="text-xl mb-2">Search</p>
-      <form onSubmit={getData}>
+      <form>
         <input onChange={(e) => setSearch(e.target.value)} className="text-black w-full focus:outline-none focus:border-[#8550F6] border-2 border-solid h-12 text-2xl pl-4 rounded-md"/>
-        <button type="submit" className="bg-[#8550F6] px-12 py-2 ml-auto my-4 rounded-md">Submit</button>
       </form>
 
-      <p className="text-xl">Results: {result.length > 0 ? result.length : ""}</p>
+      <p className="text-xl mt-2">Results: {result.length > 0 ? result.length : 0}</p>
       { result.length > 0 ? <hr className="h-1 my-2 bg-[#8550F6] border-0" /> : <br /> }
       { result.map((data: Data, key) => {
         return (
